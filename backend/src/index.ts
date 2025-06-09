@@ -1,3 +1,24 @@
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
+import { PrismaClient, ConfidenceColor, VerifiedStatus } from '@prisma/client';
+import crypto from 'crypto';
+
+dotenv.config();
+
+const app = express();
+const prisma = new PrismaClient();
+const port = process.env.PORT || 3000;
+
+app.use(cors());
+app.use(express.json());
+
+// Route santé
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok' });
+});
+
+// POST /api/prisma/products
 app.post('/api/prisma/products', async (req, res) => {
   try {
     const data = req.body;
@@ -32,4 +53,9 @@ app.post('/api/prisma/products', async (req, res) => {
     console.error('POST error:', error);
     res.status(400).json({ error: 'Erreur ajout produit', details: error.message });
   }
+});
+
+// Lancer serveur
+app.listen(port, () => {
+  console.log(`✅ Server running on port ${port}`);
 });
