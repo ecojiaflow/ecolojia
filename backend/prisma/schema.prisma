@@ -1,0 +1,47 @@
+// prisma/schema.prisma
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL") // 🔐 Chargée depuis .env → ne rien mettre en dur ici
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum ConfidenceColor {
+  green
+  yellow
+  red
+}
+
+enum VerifiedStatus {
+  verified
+  manual_review
+}
+
+model Product {
+  id               String           @id @default(uuid())
+  title            String
+  description      String
+  slug             String           @unique
+  brand            String?
+  category         String?
+  tags             String[]
+  zones_dispo      String[]
+  images           Json?
+  prices           Json?
+  affiliate_url    String?
+
+  eco_score        Decimal?         @db.Decimal
+  ai_confidence    Decimal?         @db.Decimal
+  confidence_pct   Int?
+  confidence_color ConfidenceColor
+  verified_status  VerifiedStatus
+
+  resume_fr        String?
+  resume_en        String?
+
+  enriched_at      DateTime?
+  created_at       DateTime         @default(now())
+}
