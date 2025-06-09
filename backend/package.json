@@ -5,7 +5,8 @@
     "dev": "npx ts-node-dev --clear --respawn src/index.ts",
     "build": "tsc",
     "start": "npm run build && node dist/index.js",
-    "prisma": "prisma"
+    "prisma": "prisma",
+    "postinstall": "prisma generate"
   },
   "dependencies": {
     "@prisma/client": "^6.8.2",
@@ -24,3 +25,4 @@
     "typescript": "^5.4.0"
   }
 }
+
