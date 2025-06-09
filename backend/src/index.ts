@@ -2,7 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import crypto from 'crypto';
-import { PrismaClient, ConfidenceColor, VerifiedStatus } from './generated/client';
+import { PrismaClient, ConfidenceColor, VerifiedStatus } from '@prisma/client';
 
 dotenv.config();
 
