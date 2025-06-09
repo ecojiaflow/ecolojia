@@ -1,13 +1,12 @@
-// prisma/schema.prisma
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+  output        = "../src/generated/client"
+}
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL") // 🔐 Chargée depuis .env → ne rien mettre en dur ici
-}
-
-generator client {
-  provider      = "prisma-client-js"
-  binaryTargets = ["native", "debian-openssl-3.0.x"] // ✅ pour compatibilité Render (Linux)
+  url      = env("DATABASE_URL")
 }
 
 enum ConfidenceColor {

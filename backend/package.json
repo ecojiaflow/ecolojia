@@ -3,7 +3,7 @@
   "private": true,
   "scripts": {
     "dev": "npx ts-node-dev --clear --respawn src/index.ts",
-    "build": "tsc && npx prisma generate",
+    "build": "tsc",
     "start": "npm run build && node dist/index.js",
     "prisma": "npx prisma"
   },
