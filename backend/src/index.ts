@@ -135,7 +135,7 @@ app.post('/api/prisma/products', async (req: Request, res: Response) => {
       process.env.ALGOLIA_APP_ID!,
       process.env.ALGOLIA_ADMIN_KEY!
     );
-    const index = client.searchIndex('products');
+    const index = client.getSearchIndex('products');
 
     await index.saveObject({
       objectID: product.id,
@@ -227,7 +227,7 @@ app.put('/api/prisma/products/:id', async (req: Request, res: Response) => {
       process.env.ALGOLIA_ADMIN_KEY!
     );
 
-    const index = client.searchIndex('products');
+    const index = client.getSearchIndex('products');
 
     await index.saveObject({
       objectID: updatedProduct.id,
@@ -270,7 +270,7 @@ app.delete('/api/prisma/products/:id', async (req: Request, res: Response) => {
       process.env.ALGOLIA_ADMIN_KEY!
     );
 
-    const index = client.searchIndex('products');
+    const index = client.getSearchIndex('products');
     await index.deleteObject(req.params.id);
 
     res.json({ deleted });
