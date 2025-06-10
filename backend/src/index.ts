@@ -3,7 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { PrismaClient, ConfidenceColor, VerifiedStatus } from '@prisma/client';
 import { execSync } from 'child_process';
-const algoliasearch = require('algoliasearch');
+import algoliasearch from 'algoliasearch';
 
 dotenv.config();
 
