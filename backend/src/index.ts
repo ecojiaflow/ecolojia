@@ -131,31 +131,40 @@ app.post('/api/prisma/products', async (req: Request, res: Response) => {
       }
     });
 
-    const client = algoliasearch(
-      process.env.ALGOLIA_APP_ID!,
-      process.env.ALGOLIA_ADMIN_KEY!
-    );
-    const index = client.getSearchIndex('products');
-
-    await index.saveObject({
-      objectID: product.id,
-      title: product.title,
-      description: product.description,
-      slug: product.slug,
-      brand: product.brand,
-      category: product.category,
-      tags: product.tags ?? [],
-      zones_dispo: product.zones_dispo ?? [],
-      eco_score: parseFloat(product.eco_score as any),
-      eco_score_bucket: product.eco_score_bucket ?? 'inconnu',
-      ai_confidence: parseFloat(product.ai_confidence as any),
-      confidence_pct: product.confidence_pct,
-      confidence_color: product.confidence_color,
-      prices: product.prices,
-      affiliate_url: product.affiliate_url,
-      resume_fr: product.resume_fr,
-      resume_en: product.resume_en
-    });
+    // ✅ ALGOLIA V5 - NOUVELLE SYNTAXE
+    try {
+      const client = algoliasearch(
+        process.env.ALGOLIA_APP_ID!,
+        process.env.ALGOLIA_ADMIN_KEY!
+      );
+      
+      await client.saveObject({
+        indexName: 'products',
+        body: {
+          objectID: product.id,
+          title: product.title,
+          description: product.description,
+          slug: product.slug,
+          brand: product.brand,
+          category: product.category,
+          tags: product.tags ?? [],
+          zones_dispo: product.zones_dispo ?? [],
+          eco_score: parseFloat(product.eco_score as any),
+          eco_score_bucket: product.eco_score_bucket ?? 'inconnu',
+          ai_confidence: parseFloat(product.ai_confidence as any),
+          confidence_pct: product.confidence_pct,
+          confidence_color: product.confidence_color,
+          prices: product.prices,
+          affiliate_url: product.affiliate_url,
+          resume_fr: product.resume_fr,
+          resume_en: product.resume_en
+        }
+      });
+      console.log('✅ Algolia sync success for POST');
+    } catch (algoliaError) {
+      console.log('❌ Algolia sync failed for POST:', algoliaError);
+      // Continue même si Algolia échoue
+    }
 
     res.status(201).json(product);
   } catch (error) {
@@ -221,33 +230,40 @@ app.put('/api/prisma/products/:id', async (req: Request, res: Response) => {
       }
     });
 
-    // Mettre à jour dans Algolia
-    const client = algoliasearch(
-      process.env.ALGOLIA_APP_ID!,
-      process.env.ALGOLIA_ADMIN_KEY!
-    );
-
-    const index = client.getSearchIndex('products');
-
-    await index.saveObject({
-      objectID: updatedProduct.id,
-      title: updatedProduct.title,
-      description: updatedProduct.description,
-      slug: updatedProduct.slug,
-      brand: updatedProduct.brand,
-      category: updatedProduct.category,
-      tags: updatedProduct.tags ?? [],
-      zones_dispo: updatedProduct.zones_dispo ?? [],
-      eco_score: parseFloat(updatedProduct.eco_score as any),
-      eco_score_bucket: updatedProduct.eco_score_bucket ?? 'inconnu',
-      ai_confidence: parseFloat(updatedProduct.ai_confidence as any),
-      confidence_pct: updatedProduct.confidence_pct,
-      confidence_color: updatedProduct.confidence_color,
-      prices: updatedProduct.prices,
-      affiliate_url: updatedProduct.affiliate_url,
-      resume_fr: updatedProduct.resume_fr,
-      resume_en: updatedProduct.resume_en
-    });
+    // ✅ ALGOLIA V5 - NOUVELLE SYNTAXE POUR UPDATE
+    try {
+      const client = algoliasearch(
+        process.env.ALGOLIA_APP_ID!,
+        process.env.ALGOLIA_ADMIN_KEY!
+      );
+      
+      await client.saveObject({
+        indexName: 'products',
+        body: {
+          objectID: updatedProduct.id,
+          title: updatedProduct.title,
+          description: updatedProduct.description,
+          slug: updatedProduct.slug,
+          brand: updatedProduct.brand,
+          category: updatedProduct.category,
+          tags: updatedProduct.tags ?? [],
+          zones_dispo: updatedProduct.zones_dispo ?? [],
+          eco_score: parseFloat(updatedProduct.eco_score as any),
+          eco_score_bucket: updatedProduct.eco_score_bucket ?? 'inconnu',
+          ai_confidence: parseFloat(updatedProduct.ai_confidence as any),
+          confidence_pct: updatedProduct.confidence_pct,
+          confidence_color: updatedProduct.confidence_color,
+          prices: updatedProduct.prices,
+          affiliate_url: updatedProduct.affiliate_url,
+          resume_fr: updatedProduct.resume_fr,
+          resume_en: updatedProduct.resume_en
+        }
+      });
+      console.log('✅ Algolia sync success for PUT');
+    } catch (algoliaError) {
+      console.log('❌ Algolia sync failed for PUT:', algoliaError);
+      // Continue même si Algolia échoue
+    }
 
     res.json(updatedProduct);
   } catch (error) {
@@ -264,14 +280,22 @@ app.delete('/api/prisma/products/:id', async (req: Request, res: Response) => {
       where: { id: req.params.id }
     });
 
-    // Supprimer de Algolia
-    const client = algoliasearch(
-      process.env.ALGOLIA_APP_ID!,
-      process.env.ALGOLIA_ADMIN_KEY!
-    );
-
-    const index = client.getSearchIndex('products');
-    await index.deleteObject(req.params.id);
+    // ✅ ALGOLIA V5 - NOUVELLE SYNTAXE POUR DELETE
+    try {
+      const client = algoliasearch(
+        process.env.ALGOLIA_APP_ID!,
+        process.env.ALGOLIA_ADMIN_KEY!
+      );
+      
+      await client.deleteObject({
+        indexName: 'products',
+        objectID: req.params.id
+      });
+      console.log('✅ Algolia delete success');
+    } catch (algoliaError) {
+      console.log('❌ Algolia delete failed:', algoliaError);
+      // Continue même si Algolia échoue
+    }
 
     res.json({ deleted });
   } catch (err) {
