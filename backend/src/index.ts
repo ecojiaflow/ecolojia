@@ -34,7 +34,7 @@ app.get('/init-db', async (req: Request, res: Response) => {
   }
 });
 
-// ✅ GET /api/prisma/products
+// ✅ GET /api/prisma/products - Liste tous les produits
 app.get('/api/prisma/products', async (req: Request, res: Response) => {
   try {
     const products = await prisma.product.findMany({
@@ -47,7 +47,43 @@ app.get('/api/prisma/products', async (req: Request, res: Response) => {
   }
 });
 
-// ✅ POST /api/prisma/products
+// ✅ GET /api/prisma/products/:id - Récupération d'un produit par ID
+app.get('/api/prisma/products/:id', async (req: Request, res: Response) => {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { id: req.params.id }
+    });
+    
+    if (!product) {
+      return res.status(404).json({ error: 'Produit introuvable' });
+    }
+    
+    res.json(product);
+  } catch (error) {
+    console.error('GET by ID error:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ✅ GET /products/:slug - Récupération d'un produit par slug (SEO-friendly)
+app.get('/products/:slug', async (req: Request, res: Response) => {
+  try {
+    const product = await prisma.product.findUnique({
+      where: { slug: req.params.slug }
+    });
+    
+    if (!product) {
+      return res.status(404).json({ error: 'Produit introuvable' });
+    }
+    
+    res.json(product);
+  } catch (error) {
+    console.error('GET by slug error:', error);
+    res.status(500).json({ error: 'Erreur serveur' });
+  }
+});
+
+// ✅ POST /api/prisma/products - Création d'un nouveau produit
 app.post('/api/prisma/products', async (req: Request, res: Response) => {
   try {
     const data = req.body;
@@ -129,12 +165,115 @@ app.post('/api/prisma/products', async (req: Request, res: Response) => {
   }
 });
 
-// ✅ DELETE /api/prisma/products/:id — suppression d'un produit
+// ✅ PUT /api/prisma/products/:id - Mise à jour d'un produit existant
+app.put('/api/prisma/products/:id', async (req: Request, res: Response) => {
+  try {
+    const data = req.body;
+    const productId = req.params.id;
+
+    // Vérifier que le produit existe
+    const existingProduct = await prisma.product.findUnique({
+      where: { id: productId }
+    });
+
+    if (!existingProduct) {
+      return res.status(404).json({ error: 'Produit introuvable' });
+    }
+
+    // Préparer les données de mise à jour
+    const eco_score = data.eco_score ? parseFloat(data.eco_score) : undefined;
+    const eco_score_bucket = eco_score ? 
+      (eco_score >= 0.9 ? '> 0.9' : eco_score >= 0.8 ? '0.8 - 0.9' : '< 0.8') : 
+      undefined;
+
+    const tags: string[] | undefined = Array.isArray(data.tags) ? data.tags : undefined;
+    const zones_dispo: string[] | undefined = Array.isArray(data.zones_dispo) ? data.zones_dispo : undefined;
+
+    const confidence_color = data.confidence_color && ['green', 'yellow', 'red'].includes(data.confidence_color)
+      ? data.confidence_color as keyof typeof ConfidenceColor
+      : undefined;
+
+    const verified_status = data.verified_status && ['verified', 'manual_review'].includes(data.verified_status)
+      ? data.verified_status as keyof typeof VerifiedStatus
+      : undefined;
+
+    // Mettre à jour le produit (seulement les champs fournis)
+    const updatedProduct = await prisma.product.update({
+      where: { id: productId },
+      data: {
+        ...(data.title && { title: data.title }),
+        ...(data.description && { description: data.description }),
+        ...(data.slug && { slug: data.slug }),
+        ...(data.brand !== undefined && { brand: data.brand }),
+        ...(data.category !== undefined && { category: data.category }),
+        ...(tags && { tags }),
+        ...(zones_dispo && { zones_dispo }),
+        ...(eco_score !== undefined && { eco_score }),
+        ...(eco_score_bucket && { eco_score_bucket }),
+        ...(data.ai_confidence !== undefined && { ai_confidence: data.ai_confidence }),
+        ...(data.confidence_pct !== undefined && { confidence_pct: data.confidence_pct }),
+        ...(confidence_color && { confidence_color: ConfidenceColor[confidence_color] }),
+        ...(verified_status && { verified_status: VerifiedStatus[verified_status] }),
+        ...(data.prices !== undefined && { prices: data.prices }),
+        ...(data.affiliate_url !== undefined && { affiliate_url: data.affiliate_url }),
+        ...(data.resume_fr !== undefined && { resume_fr: data.resume_fr }),
+        ...(data.resume_en !== undefined && { resume_en: data.resume_en }),
+        ...(data.enriched_at && { enriched_at: new Date(data.enriched_at) })
+      }
+    });
+
+    // Mettre à jour dans Algolia
+    const client = algoliasearch(
+      process.env.ALGOLIA_APP_ID!,
+      process.env.ALGOLIA_ADMIN_KEY!
+    );
+
+    const index = client.initIndex('products');
+
+    await index.saveObject({
+      objectID: updatedProduct.id,
+      title: updatedProduct.title,
+      description: updatedProduct.description,
+      slug: updatedProduct.slug,
+      brand: updatedProduct.brand,
+      category: updatedProduct.category,
+      tags: updatedProduct.tags ?? [],
+      zones_dispo: updatedProduct.zones_dispo ?? [],
+      eco_score: parseFloat(updatedProduct.eco_score as any),
+      eco_score_bucket: updatedProduct.eco_score_bucket ?? 'inconnu',
+      ai_confidence: parseFloat(updatedProduct.ai_confidence as any),
+      confidence_pct: updatedProduct.confidence_pct,
+      confidence_color: updatedProduct.confidence_color,
+      prices: updatedProduct.prices,
+      affiliate_url: updatedProduct.affiliate_url,
+      resume_fr: updatedProduct.resume_fr,
+      resume_en: updatedProduct.resume_en
+    });
+
+    res.json(updatedProduct);
+  } catch (error) {
+    console.error('PUT error:', error);
+    res.status(400).json({ error: 'Erreur mise à jour produit' });
+  }
+});
+
+// ✅ DELETE /api/prisma/products/:id - Suppression d'un produit
 app.delete('/api/prisma/products/:id', async (req: Request, res: Response) => {
   try {
+    // Supprimer de la base de données
     const deleted = await prisma.product.delete({
       where: { id: req.params.id }
     });
+
+    // Supprimer de Algolia
+    const client = algoliasearch(
+      process.env.ALGOLIA_APP_ID!,
+      process.env.ALGOLIA_ADMIN_KEY!
+    );
+
+    const index = client.initIndex('products');
+    await index.deleteObject(req.params.id);
+
     res.json({ deleted });
   } catch (err) {
     console.error('DELETE error:', err);
@@ -142,7 +281,7 @@ app.delete('/api/prisma/products/:id', async (req: Request, res: Response) => {
   }
 });
 
-// ✅ POST /api/suggest
+// ✅ POST /api/suggest - Proxy vers n8n pour enrichissement IA
 app.post('/api/suggest', async (req: Request, res: Response) => {
   try {
     const { query, zone, lang } = req.body;
