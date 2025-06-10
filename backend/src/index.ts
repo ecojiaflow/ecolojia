@@ -132,11 +132,10 @@ app.post('/api/prisma/products', async (req: Request, res: Response) => {
     });
 
     const client = algoliasearch(
-      process.env.ALGOLIA_APP_ID!,
-      process.env.ALGOLIA_ADMIN_KEY!
-    );
-
-    const index = client.initIndex('products');
+  process.env.ALGOLIA_APP_ID!,
+  process.env.ALGOLIA_ADMIN_KEY!
+);
+const index = client.searchIndex('products');
 
     await index.saveObject({
       objectID: product.id,
