@@ -33,6 +33,7 @@ model Product {
   affiliate_url    String?
 
   eco_score        Decimal?         @db.Decimal
+  eco_score_bucket String           // ✅ ajouté pour le filtrage Algolia
   ai_confidence    Decimal?         @db.Decimal
   confidence_pct   Int?
   confidence_color ConfidenceColor

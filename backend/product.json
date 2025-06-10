@@ -1,0 +1,22 @@
+{
+  "id": "test-eco-011",
+  "title": "Déodorant naturel",
+  "description": "Déodorant solide sans aluminium ni plastique.",
+  "slug": "deodorant-naturel-11",
+  "brand": "EcoBrand",
+  "category": "hygiène",
+  "tags": ["vegan", "zero-waste"],
+  "zones_dispo": ["FR", "BE"],
+  "eco_score": 0.92,
+  "ai_confidence": 0.95,
+  "confidence_pct": 95,
+  "confidence_color": "green",
+  "verified_status": "verified",
+  "prices": { "EUR": 5.9 },
+  "affiliate_url": "https://boutique.eco/deo",
+  "resume_fr": "Un déodorant naturel efficace et respectueux.",
+  "resume_en": "A natural and eco-friendly deodorant.",
+  "enriched_at": "2025-06-09T12:00:00.000Z",
+  "created_at": "2025-06-09T12:00:00.000Z"
+}
+
